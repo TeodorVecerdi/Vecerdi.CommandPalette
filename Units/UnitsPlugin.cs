@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using UnityEditor;
@@ -17,7 +15,7 @@ public partial class UnitsPlugin : IPlugin, IResourcePathProvider {
     [InitializeOnLoadMethod]
     private static void InitializePlugin() {
         CommandPalette.RegisterPlugin(s_Plugin);
-        Settings = CommandPalette.GetSettings<UnitConversionSettings>(s_Plugin);
+        Settings = CommandPalette.GetSettings(s_Plugin);
     }
 
     public static IResourcePathProvider ResourcePathProvider => s_Plugin;
@@ -36,11 +34,11 @@ public partial class UnitsPlugin : IPlugin, IResourcePathProvider {
 
     public IEnumerable<ResultEntry> GetResults(Query query) {
         if (!IsValid(query))
-            return Array.Empty<ResultEntry>();
+            return [];
 
         var conversion = UnitConversionHelper.ParseUnit(query.Text, Settings.RemToPxRatio);
         if (conversion == null)
-            return Array.Empty<ResultEntry>();
+            return [];
 
         return GenerateConversionResults(conversion);
     }
@@ -50,10 +48,12 @@ public partial class UnitsPlugin : IPlugin, IResourcePathProvider {
 
         // Pixels
         var pxValue = $"{conversion.PxValue:0.##}px";
+        var pxValueUnitless = $"{conversion.PxValue:0.##}";
         if (conversion.InputType != UnitType.Px) {
             results.Add(new UnitResultEntry(
                 conversion,
                 pxValue,
+                pxValueUnitless,
                 new ResultDisplaySettings(pxValue, null, "Copy to clipboard", IconResource.FromResource("Textures/UnitIcon.png")),
                 100,
                 CopyToClipboard
@@ -62,10 +62,12 @@ public partial class UnitsPlugin : IPlugin, IResourcePathProvider {
 
         // Rem
         var remValue = $"{conversion.RemValue:0.####}rem";
+        var remValueUnitless = $"{conversion.RemValue:0.####}";
         if (conversion.InputType != UnitType.Rem) {
             results.Add(new UnitResultEntry(
                 conversion,
                 remValue,
+                remValueUnitless,
                 new ResultDisplaySettings(remValue, null, "Copy to clipboard", IconResource.FromResource("Textures/UnitIcon.png")),
                 100,
                 CopyToClipboard
@@ -74,10 +76,12 @@ public partial class UnitsPlugin : IPlugin, IResourcePathProvider {
 
         // Tailwind spacing
         var twValue = $"{conversion.TwValue:0.##}tw";
+        var twValueUnitless = $"{conversion.TwValue:0.##}";
         if (conversion.InputType != UnitType.Tw) {
             results.Add(new UnitResultEntry(
                 conversion,
                 twValue,
+                twValueUnitless,
                 new ResultDisplaySettings(twValue, null, "Copy to clipboard", IconResource.FromResource("Textures/UnitIcon.png")),
                 100,
                 CopyToClipboard
@@ -85,22 +89,24 @@ public partial class UnitsPlugin : IPlugin, IResourcePathProvider {
         }
 
         // Closest Tailwind spacing class
-        var closestTwSpacing = UnitConversionHelper.GetClosestTailwindSpacing(conversion.TwValue);
+        var closestTwSpacing = UnitConversionHelper.GetClosestTailwindSpacing(conversion.TwValue, out var isExactMatch);
         results.Add(new UnitResultEntry(
             conversion,
             closestTwSpacing,
-            new ResultDisplaySettings($"tw-{closestTwSpacing}", "Closest Tailwind spacing", "Copy to clipboard", IconResource.FromResource("Textures/UnitIcon.png")),
+            closestTwSpacing,
+            new ResultDisplaySettings($"tw-{closestTwSpacing}", isExactMatch ? null : "Closest Tailwind spacing", "Copy to clipboard", IconResource.FromResource("Textures/UnitIcon.png")),
             90,
             CopyToClipboard
         ));
 
         // Closest Tailwind font size
-        var closestTwFont = UnitConversionHelper.GetClosestTailwindFont(conversion.RemValue);
+        var closestTwFont = UnitConversionHelper.GetClosestTailwindFont(conversion.RemValue, out isExactMatch);
         if (conversion.InputType != UnitType.TailwindFont) {
             results.Add(new UnitResultEntry(
                 conversion,
                 closestTwFont,
-                new ResultDisplaySettings(closestTwFont, "Closest Tailwind font size", "Copy to clipboard", IconResource.FromResource("Textures/UnitIcon.png")),
+                closestTwFont,
+                new ResultDisplaySettings(closestTwFont, isExactMatch ? null : "Closest Tailwind font size", "Copy to clipboard", IconResource.FromResource("Textures/UnitIcon.png")),
                 90,
                 CopyToClipboard
             ));
@@ -111,9 +117,10 @@ public partial class UnitsPlugin : IPlugin, IResourcePathProvider {
 
     private static bool CopyToClipboard(ResultEntry result) {
         if (result is UnitResultEntry unitResult) {
-            GUIUtility.systemCopyBuffer = unitResult.UnitValue;
+            GUIUtility.systemCopyBuffer = unitResult.UnitlessValue;
             return true;
         }
+
         return false;
     }
 

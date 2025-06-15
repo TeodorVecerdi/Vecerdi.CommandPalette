@@ -1,17 +1,11 @@
 using System;
 using Vecerdi.CommandPalette.Core;
-using Vecerdi.CommandPalette.Resource;
 using Vecerdi.CommandPalette.Units.Helpers;
 
 namespace Vecerdi.CommandPalette.Units;
 
-public class UnitResultEntry : ResultEntry {
-    public UnitConversion Conversion { get; }
-    public string UnitValue { get; }
-
-    public UnitResultEntry(UnitConversion conversion, string unitValue, ResultDisplaySettings displaySettings, int priority, Func<ResultEntry, bool>? onSelect) 
-        : base(displaySettings, priority, onSelect, UnitsPlugin.ResourcePathProvider) {
-        Conversion = conversion;
-        UnitValue = unitValue;
-    }
+public class UnitResultEntry(UnitConversion conversion, string unitValue, string unitlessValue, ResultDisplaySettings displaySettings, int priority, Func<ResultEntry, bool>? onSelect) : ResultEntry(displaySettings, priority, onSelect, UnitsPlugin.ResourcePathProvider) {
+    public UnitConversion Conversion { get; } = conversion;
+    public string UnitValue { get; } = unitValue;
+    public string UnitlessValue { get; } = unitlessValue;
 }
