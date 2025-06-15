@@ -57,7 +57,7 @@ public class CommandPaletteSettings : ScriptableObject {
     internal const string NoiseTextureProperty = nameof(m_NoiseTexture);
 
     internal static string GetSettingsPath() {
-        return $"{CommandPalettePackageLocator.GetCommandPaletteAssetPath()}/Settings/Settings.asset";
+        return "Assets/Settings/CommandPaletteSettings.asset";
     }
 
     internal static CommandPaletteSettings GetOrCreateSettings() {
