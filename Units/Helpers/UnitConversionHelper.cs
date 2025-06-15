@@ -98,9 +98,10 @@ public static class UnitConversionHelper {
     public static string GetClosestTailwindSpacing(float twValue) {
         var closestKey = 0;
         var minDifference = float.MaxValue;
+        var remValue = twValue * 0.25f; // Convert tw to rem
 
         foreach (var kvp in TailwindSpacing) {
-            var difference = Math.Abs(kvp.Value - twValue * 0.25f);
+            var difference = Math.Abs(kvp.Value - remValue);
             if (difference < minDifference) {
                 minDifference = difference;
                 closestKey = kvp.Key;
