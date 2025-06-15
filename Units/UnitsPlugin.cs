@@ -17,7 +17,7 @@ public partial class UnitsPlugin : IPlugin, IResourcePathProvider {
     [InitializeOnLoadMethod]
     private static void InitializePlugin() {
         CommandPalette.RegisterPlugin(s_Plugin);
-        Settings = CommandPalette.GetSettings(s_Plugin);
+        Settings = CommandPalette.GetSettings<UnitConversionSettings>(s_Plugin);
     }
 
     public static IResourcePathProvider ResourcePathProvider => s_Plugin;
