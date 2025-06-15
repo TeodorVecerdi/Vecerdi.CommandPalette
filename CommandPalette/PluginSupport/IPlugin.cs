@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
-using CommandPalette.Core;
+using Vecerdi.CommandPalette.Core;
 
-namespace CommandPalette.Plugins {
-    public interface IPlugin {
-        string Name { get; }
-        float PriorityMultiplier { get; }
-        CommandPaletteWindow Window { get; set; }
+namespace Vecerdi.CommandPalette.PluginSupport;
 
-        bool IsValid(Query query);
-        IEnumerable<ResultEntry> GetResults(Query query);
-    }
+public interface IPlugin {
+    string Name { get; }
+    float PriorityMultiplier { get; }
+    CommandPaletteWindow Window { get; set; }
+
+    bool IsValid(Query query);
+    IEnumerable<ResultEntry> GetResults(Query query);
 }

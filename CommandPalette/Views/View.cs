@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace CommandPalette.Views {
-    public abstract class View {
-        public CommandPaletteWindow Window { get; set; } = null!;
+namespace Vecerdi.CommandPalette.Views;
 
-        public abstract VisualElement Build();
+public abstract class View {
+    public CommandPaletteWindow Window { get; set; } = null!;
 
-        public virtual void OnEvent(Event evt) { }
-    }
+    public abstract VisualElement Build();
+
+    public virtual void OnEvent(Event evt) { }
 }
