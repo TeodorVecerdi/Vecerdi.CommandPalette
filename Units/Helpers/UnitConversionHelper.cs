@@ -122,9 +122,9 @@ public static class UnitConversionHelper {
             },
             "" => new UnitConversion {
                 OriginalInput = input,
-                RemValue = value / remToPxRatio,
-                PxValue = value,
-                TwValue = value / remToPxRatio / 0.25f,
+                RemValue = value * 0.25f,
+                PxValue = value * 0.25f * remToPxRatio,
+                TwValue = value,
                 InputType = UnitType.Number,
             },
             _ => null,
