@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -25,9 +24,9 @@ public static class BasicCommands {
     [InlineParameterValuesProvider]
     private static InlineParameterValues<string> OpenScene_GetScenesProvider() {
         return new InlineParameterValues<string>(
-            EditorBuildSettings.scenes
-                .Select(scene => GetSceneInlineParameter(scene.path))
-                .Concat(GetExtraScenes())
+            AssetDatabase.FindAssets("t:Scene", ["Assets"])
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Select(GetSceneInlineParameter)
         );
     }
 
@@ -35,10 +34,6 @@ public static class BasicCommands {
         return new InlineParameterResultEntry<string>(
             path, new ResultDisplaySettings(Path.GetFileNameWithoutExtension(path), null, path, IconResource.FromBuiltinIcon("d_unitylogo"))
         );
-    }
-
-    private static IEnumerable<InlineParameterResultEntry<string>> GetExtraScenes() {
-        yield break;
     }
 
     [InlineParameterValuesProvider]
