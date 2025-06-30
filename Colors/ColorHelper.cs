@@ -238,7 +238,7 @@ public static class ColorHelper {
         if (s == 0.0f) {
             r = g = b = l; // achromatic
         } else {
-            float Hue2RGB(float p, float q, float t) {
+            static float Hue2RGB(float p, float q, float t) {
                 if (t < 0) t += 1;
                 if (t > 1) t -= 1;
                 return t switch {

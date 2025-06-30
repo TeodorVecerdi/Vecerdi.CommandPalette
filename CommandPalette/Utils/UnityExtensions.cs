@@ -10,7 +10,7 @@ namespace Vecerdi.CommandPalette.Utils;
 public static class UnityExtensions {
     public static Type[] GetAllDerivedTypes(this AppDomain aAppDomain, Type aType) {
         List<Type> result = [];
-        Assembly[] assemblies = aAppDomain.GetAssemblies();
+        var assemblies = aAppDomain.GetAssemblies();
         foreach (var assembly in assemblies) {
             var types = assembly.GetTypes();
             foreach (var type in types)
@@ -36,7 +36,7 @@ public static class UnityExtensions {
                 throw new MissingFieldException("Can't find internal fields 'm_ShowMode' or 'position'. Maybe something has changed inside Unity");
         }
 
-        Object[] windows = Resources.FindObjectsOfTypeAll(s_ContainerWinType);
+        var windows = Resources.FindObjectsOfTypeAll(s_ContainerWinType);
         foreach (var win in windows) {
             var showmode = (int)s_ShowModeField.GetValue(win);
             if (showmode == 4) {

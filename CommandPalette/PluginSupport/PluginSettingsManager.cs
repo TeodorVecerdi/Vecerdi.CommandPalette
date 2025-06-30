@@ -12,7 +12,7 @@ internal static class PluginSettingsManager {
     internal static Dictionary<IPluginSettingsProvider, ScriptableObject> Settings { get; } = new();
 
     internal static ScriptableObject GetOrCreateSettings(IPlugin? plugin, Type settingsType) {
-        Object[] allAssets = AssetDatabase.LoadAllAssetsAtPath(CommandPaletteSettings.GetSettingsPath());
+        var allAssets = AssetDatabase.LoadAllAssetsAtPath(CommandPaletteSettings.GetSettingsPath());
         if (allAssets.FirstOrDefault(x => x.GetType() == settingsType) is not ScriptableObject settings) {
             Debug.Log($"<b>CommandPalette Settings Manager</b>: Creating settings object for plugin <b>{plugin?.Name ?? settingsType.Name}</b>");
             settings = ScriptableObject.CreateInstance(settingsType);

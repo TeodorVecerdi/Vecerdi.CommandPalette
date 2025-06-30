@@ -20,7 +20,7 @@ public static class CommandPaletteDriver {
     [InitializeOnLoadMethod]
     private static void InitializeDriver() {
         s_ParameterValueProviders = TypeCache.GetMethodsWithAttribute<InlineParameterValuesProviderAttribute>().ToDictionary(info => info.Name);
-        Dictionary<string, MethodInfo> validateMethods = TypeCache.GetMethodsWithAttribute<CommandValidateMethodAttribute>().ToDictionary(info => info.Name);
+        var validateMethods = TypeCache.GetMethodsWithAttribute<CommandValidateMethodAttribute>().ToDictionary(info => info.Name);
         IEnumerable<MethodInfo> methods = TypeCache.GetMethodsWithAttribute<CommandAttribute>();
 
         foreach (var method in methods) {
