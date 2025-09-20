@@ -25,11 +25,11 @@ public static class CommandPaletteDriver {
 
         foreach (var method in methods) {
             var attribute = method.GetCustomAttribute<CommandAttribute>();
-            var displayName = string.IsNullOrWhiteSpace(attribute.DisplayName) ? ObjectNames.NicifyVariableName(method.Name) : attribute.DisplayName;
-            var shortName = string.IsNullOrWhiteSpace(attribute.ShortName) ? GetShortName(ObjectNames.NicifyVariableName(displayName)) : attribute.ShortName;
+            var displayName = string.IsNullOrWhiteSpace(attribute.DisplayName) ? ObjectNames.NicifyVariableName(method.Name) : attribute.DisplayName!;
+            var shortName = string.IsNullOrWhiteSpace(attribute.ShortName) ? GetShortName(ObjectNames.NicifyVariableName(displayName)) : attribute.ShortName!;
             MethodInfo? validationMethod = null;
             if (!string.IsNullOrEmpty(attribute.ValidationMethod)) {
-                if (!validateMethods.TryGetValue(attribute.ValidationMethod, out validationMethod)) {
+                if (!validateMethods.TryGetValue(attribute.ValidationMethod!, out validationMethod)) {
                     Debug.LogError($"Could not find validation method {attribute.ValidationMethod} for command {displayName}");
                 }
 

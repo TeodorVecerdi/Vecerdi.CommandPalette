@@ -25,7 +25,7 @@ public struct IconResource {
         }
 
         if (!string.IsNullOrEmpty(m_ResourcePath)) {
-            return m_Texture = ResourceLoader.Load<Texture>(m_ResourcePath, resourcePathProvider);
+            return m_Texture = ResourceLoader.Load<Texture>(m_ResourcePath!, resourcePathProvider);
         }
 
         return null;
@@ -43,7 +43,7 @@ public struct IconResource {
     public static IconResource Parse(string? resource) {
         if (string.IsNullOrWhiteSpace(resource)) return default;
 
-        if (resource.StartsWith("r:")) return FromBuiltinIcon(resource.Substring(2));
+        if (resource!.StartsWith("r:")) return FromBuiltinIcon(resource.Substring(2));
         return FromResource(resource);
     }
 
