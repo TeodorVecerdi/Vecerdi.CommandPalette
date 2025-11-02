@@ -75,9 +75,9 @@ public partial class UnitsPlugin : IPlugin, IResourcePathProvider {
         }
 
         // Tailwind spacing
-        var twValue = $"{conversion.TwValue:0.##}tw";
+        var twValue = $"{conversion.TwValue:0.##}";
         var twValueUnitless = $"{conversion.TwValue:0.##}";
-        if (conversion.InputType != UnitType.Tw) {
+        if (conversion.InputType != UnitType.Number) {
             results.Add(new UnitResultEntry(
                 conversion,
                 twValue,
@@ -88,16 +88,18 @@ public partial class UnitsPlugin : IPlugin, IResourcePathProvider {
             ));
         }
 
-        // Closest Tailwind spacing class
-        var closestTwSpacing = UnitConversionHelper.GetClosestTailwindSpacing(conversion.TwValue, out var isExactMatch);
-        results.Add(new UnitResultEntry(
-            conversion,
-            closestTwSpacing,
-            closestTwSpacing,
-            new ResultDisplaySettings($"tw-{closestTwSpacing}", isExactMatch ? null : "Closest Tailwind spacing", "Copy to clipboard", IconResource.FromResource("Textures/UnitIcon.png")),
-            90,
-            CopyToClipboard
-        ));
+        // Closest Tailwind breakpoint
+        var closestTwBreakpoint = UnitConversionHelper.GetClosestTailwindBreakpoint(conversion.RemValue, out var isExactMatch);
+        if (conversion.InputType != UnitType.TailwindBreakpoint) {
+            results.Add(new UnitResultEntry(
+                conversion,
+                closestTwBreakpoint,
+                closestTwBreakpoint,
+                new ResultDisplaySettings(closestTwBreakpoint, isExactMatch ? null : "Closest Tailwind breakpoint size", "Copy to clipboard", IconResource.FromResource("Textures/UnitIcon.png")),
+                90,
+                CopyToClipboard
+            ));
+        }
 
         // Closest Tailwind font size
         var closestTwFont = UnitConversionHelper.GetClosestTailwindFont(conversion.RemValue, out isExactMatch);
