@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.Compilation;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -174,5 +175,10 @@ public static class BasicCommands {
     [Command(ShortName = "CLR", ValidationMethod = nameof(ClearConsoleMethodExists), IconPath = "r:crossicon")]
     private static void ClearConsoleEntries() {
         s_ClearConsoleMethod!.Invoke(null, null);
+    }
+
+    [Command(DisplayName = "Recompile Code", ShortName = "RC", Description = "Triggers a recompilation of all scripts.", IconPath = "r:d_cs script icon", Priority = 50.0f)]
+    private static void RecompileCode() {
+        CompilationPipeline.RequestScriptCompilation();
     }
 }
