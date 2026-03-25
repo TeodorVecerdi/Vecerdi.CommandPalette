@@ -6,41 +6,49 @@ using Vecerdi.CommandPalette.PluginSupport;
 namespace Vecerdi.CommandPalette.Settings;
 
 public static class CommandPaletteSettingsProvider {
-    private static readonly GUIStyle s_HeaderStyle = new(EditorStyles.boldLabel) {
-        fontSize = 16,
-        margin = { bottom = 4 },
-    };
+    // GUIStyles must be lazily initialized — EditorStyles is not available during domain reload
+    // when Unity invokes the [SettingsProvider] factory method.
+    private static GUIStyle? s_HeaderStyle;
+    private static GUIStyle? s_PluginNameStyle;
+    private static GUIStyle? s_PluginHeaderStyle;
+    private static GUIStyle? s_PluginContentsStyle;
+    private static GUIStyle? s_SectionStyle;
+    private static GUIStyle? s_BoxStyle;
 
-    private static readonly GUIStyle s_PluginNameStyle = new(EditorStyles.boldLabel) {
-        fontSize = 13,
-    };
+    private static void EnsureStyles() {
+        if (s_HeaderStyle != null) return;
 
-    private static readonly GUIStyle s_PluginHeaderStyle = new() {
-        margin = { top = 12 },
-    };
-
-    private static readonly GUIStyle s_PluginContentsStyle = new() {
-        margin = {
-            left = 3,
-            right = 3,
-        },
-    };
-
-    private static readonly GUIStyle s_SectionStyle = new() {
-        margin = new RectOffset(8, 8, 8, 0),
-    };
-
-    private static readonly GUIStyle s_BoxStyle = new("box") {
-        fontSize = 16,
-        fontStyle = FontStyle.Bold,
-        normal = {
-            textColor = new Color(0.752f, 0.752f, 0.752f, 1.0f),
-        },
-        padding = new RectOffset(8, 8, 8, 8),
-    };
+        s_HeaderStyle = new GUIStyle(EditorStyles.boldLabel) {
+            fontSize = 16,
+            margin = { bottom = 4 },
+        };
+        s_PluginNameStyle = new GUIStyle(EditorStyles.boldLabel) {
+            fontSize = 13,
+        };
+        s_PluginHeaderStyle = new GUIStyle {
+            margin = { top = 12 },
+        };
+        s_PluginContentsStyle = new GUIStyle {
+            margin = {
+                left = 3,
+                right = 3,
+            },
+        };
+        s_SectionStyle = new GUIStyle {
+            margin = new RectOffset(8, 8, 8, 0),
+        };
+        s_BoxStyle = new GUIStyle("box") {
+            fontSize = 16,
+            fontStyle = FontStyle.Bold,
+            normal = {
+                textColor = new Color(0.752f, 0.752f, 0.752f, 1.0f),
+            },
+            padding = new RectOffset(8, 8, 8, 8),
+        };
+    }
 
     [SettingsProvider]
-    public static SettingsProvider CreateProvider() {
+    public static SettingsProvider CreateCommandPaletteSettingsProvider() {
         PluginSettingsManager.CleanupAssets();
         HashSet<string> keywords = new() {
             "Command Palette",
@@ -63,6 +71,7 @@ public static class CommandPaletteSettingsProvider {
         return new SettingsProvider("Project/CommandPalette", SettingsScope.Project) {
             label = "Command Palette",
             guiHandler = _ => {
+                EnsureStyles();
                 var settings = CommandPaletteSettings.GetSerializedSettings();
                 DrawBlurSettings(settings);
                 settings.ApplyModifiedProperties();
@@ -99,6 +108,7 @@ public static class CommandPaletteSettingsProvider {
     }
 
     private static void DrawBlurSettings(SerializedObject serializedObject) {
+        EnsureStyles();
         var settings = CommandPaletteSettings.GetOrCreateSettings();
 
         GUILayout.BeginVertical("", s_SectionStyle);
@@ -139,6 +149,7 @@ public static class CommandPaletteSettingsProvider {
     }
 
     private static void DrawPluginHeader(IPluginSettingsProvider provider, ScriptableObject pluginSettings) {
+        EnsureStyles();
         var pluginName = provider is IPlugin plugin ? plugin.Name : provider.GetType().Name;
         GUILayout.BeginHorizontal(s_PluginHeaderStyle);
         GUILayout.Label(pluginName, s_PluginNameStyle, GUILayout.Width(256.0f));
