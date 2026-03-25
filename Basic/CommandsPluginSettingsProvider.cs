@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.UIElements;
+using UnityEngine.UIElements;
 using Vecerdi.CommandPalette.Basic.Settings;
 using Vecerdi.CommandPalette.PluginSupport;
 
@@ -10,8 +12,9 @@ public partial class CommandsPlugin : IPluginSettingsProvider<CommandsPluginSett
         keywords.Add("Search Cutoff");
     }
 
-    public void DrawSettings(SerializedObject settings) {
-        EditorGUILayout.PropertyField(settings.FindProperty(CommandsPluginSettings.SearchCutoffProperty));
-        settings.ApplyModifiedProperties();
+    public VisualElement CreateSettingsUI(SerializedObject settings) {
+        var container = new VisualElement();
+        container.Add(new PropertyField(settings.FindProperty(CommandsPluginSettings.SearchCutoffProperty)));
+        return container;
     }
 }

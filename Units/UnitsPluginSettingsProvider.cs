@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.UIElements;
+using UnityEngine.UIElements;
 using Vecerdi.CommandPalette.PluginSupport;
 using Vecerdi.CommandPalette.Units.Settings;
 
@@ -12,8 +14,9 @@ public partial class UnitsPlugin : IPluginSettingsProvider<UnitConversionSetting
         keywords.Add("Tailwind");
     }
 
-    public void DrawSettings(SerializedObject settings) {
-        EditorGUILayout.PropertyField(settings.FindProperty(UnitConversionSettings.RemToPxRatioProperty));
-        settings.ApplyModifiedProperties();
+    public VisualElement CreateSettingsUI(SerializedObject settings) {
+        var container = new VisualElement();
+        container.Add(new PropertyField(settings.FindProperty(UnitConversionSettings.RemToPxRatioProperty)));
+        return container;
     }
 }

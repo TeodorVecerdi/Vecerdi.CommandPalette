@@ -1,161 +1,192 @@
 ﻿using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Vecerdi.CommandPalette.PluginSupport;
 
 namespace Vecerdi.CommandPalette.Settings;
 
-public static class CommandPaletteSettingsProvider {
-    // GUIStyles must be lazily initialized — EditorStyles is not available during domain reload
-    // when Unity invokes the [SettingsProvider] factory method.
-    private static GUIStyle? s_HeaderStyle;
-    private static GUIStyle? s_PluginNameStyle;
-    private static GUIStyle? s_PluginHeaderStyle;
-    private static GUIStyle? s_PluginContentsStyle;
-    private static GUIStyle? s_SectionStyle;
-    private static GUIStyle? s_BoxStyle;
+public class CommandPaletteSettingsProvider : SettingsProvider {
+    private CommandPaletteSettingsProvider(IEnumerable<string> keywords)
+        : base("Project/CommandPalette", SettingsScope.Project, keywords) {
+        label = "Command Palette";
+    }
 
-    private static void EnsureStyles() {
-        if (s_HeaderStyle != null) return;
+    public override void OnActivate(string searchContext, VisualElement rootElement) {
+        var settings = CommandPaletteSettings.GetOrCreateSettings();
+        var serializedSettings = new SerializedObject(settings);
 
-        s_HeaderStyle = new GUIStyle(EditorStyles.boldLabel) {
-            fontSize = 16,
-            margin = { bottom = 4 },
-        };
-        s_PluginNameStyle = new GUIStyle(EditorStyles.boldLabel) {
-            fontSize = 13,
-        };
-        s_PluginHeaderStyle = new GUIStyle {
-            margin = { top = 12 },
-        };
-        s_PluginContentsStyle = new GUIStyle {
-            margin = {
-                left = 3,
-                right = 3,
+        var mainContainer = new VisualElement {
+            style = {
+                paddingLeft = 8,
+                paddingRight = 8,
+                paddingTop = 4,
             },
         };
-        s_SectionStyle = new GUIStyle {
-            margin = new RectOffset(8, 8, 8, 0),
-        };
-        s_BoxStyle = new GUIStyle("box") {
-            fontSize = 16,
-            fontStyle = FontStyle.Bold,
-            normal = {
-                textColor = new Color(0.752f, 0.752f, 0.752f, 1.0f),
+
+        // UITK mode doesn't auto-render the provider label as a title the way IMGUI does.
+        mainContainer.Add(new Label("Command Palette") {
+            style = {
+                fontSize = 19,
+                unityFontStyleAndWeight = FontStyle.Bold,
+                marginBottom = 10,
             },
-            padding = new RectOffset(8, 8, 8, 8),
+        });
+
+        // General Settings
+        mainContainer.Add(CreateSectionLabel("General Settings", firstSection: true));
+        mainContainer.Add(new PropertyField(serializedSettings.FindProperty(CommandPaletteSettings.ClearSearchOnSelectionProperty)));
+
+        // Blur Settings
+        mainContainer.Add(CreateSectionLabel("Blur Settings"));
+        mainContainer.Add(new PropertyField(serializedSettings.FindProperty(CommandPaletteSettings.DownSamplePassesProperty)));
+        mainContainer.Add(new PropertyField(serializedSettings.FindProperty(CommandPaletteSettings.PassesProperty)));
+        mainContainer.Add(new PropertyField(serializedSettings.FindProperty(CommandPaletteSettings.BlurSizeProperty)));
+
+        // Tint
+        var enableTintProp = serializedSettings.FindProperty(CommandPaletteSettings.EnableTintProperty);
+        mainContainer.Add(new PropertyField(enableTintProp));
+        var tintGroup = new VisualElement { style = { marginLeft = 16 } };
+        tintGroup.Add(new PropertyField(serializedSettings.FindProperty(CommandPaletteSettings.TintAmountProperty)));
+        tintGroup.Add(new PropertyField(serializedSettings.FindProperty(CommandPaletteSettings.TintProperty)));
+        tintGroup.style.display = settings.EnableTint ? DisplayStyle.Flex : DisplayStyle.None;
+        tintGroup.TrackPropertyValue(enableTintProp, p => tintGroup.style.display = p.boolValue ? DisplayStyle.Flex : DisplayStyle.None);
+        mainContainer.Add(tintGroup);
+
+        // Vibrancy
+        var enableVibrancyProp = serializedSettings.FindProperty(CommandPaletteSettings.EnableVibrancyProperty);
+        mainContainer.Add(new PropertyField(enableVibrancyProp));
+        var vibrancyGroup = new VisualElement { style = { marginLeft = 16 } };
+        vibrancyGroup.Add(new PropertyField(serializedSettings.FindProperty(CommandPaletteSettings.VibrancyProperty)));
+        vibrancyGroup.style.display = settings.EnableVibrancy ? DisplayStyle.Flex : DisplayStyle.None;
+        vibrancyGroup.TrackPropertyValue(enableVibrancyProp, p => vibrancyGroup.style.display = p.boolValue ? DisplayStyle.Flex : DisplayStyle.None);
+        mainContainer.Add(vibrancyGroup);
+
+        // Noise
+        var enableNoiseProp = serializedSettings.FindProperty(CommandPaletteSettings.EnableNoiseProperty);
+        mainContainer.Add(new PropertyField(enableNoiseProp));
+        var noiseGroup = new VisualElement { style = { marginLeft = 16 } };
+        noiseGroup.Add(new PropertyField(serializedSettings.FindProperty(CommandPaletteSettings.NoiseTextureProperty)));
+        noiseGroup.style.display = settings.EnableNoise ? DisplayStyle.Flex : DisplayStyle.None;
+        noiseGroup.TrackPropertyValue(enableNoiseProp, p => noiseGroup.style.display = p.boolValue ? DisplayStyle.Flex : DisplayStyle.None);
+        mainContainer.Add(noiseGroup);
+
+        // Plugin settings — all live inside mainContainer so layout is unified.
+        // Each plugin section is re-bound to its own SerializedObject after the main Bind call.
+        var pluginBindings = new List<(VisualElement element, SerializedObject so)>();
+        if (PluginSettingsManager.Settings.Count > 0) {
+            var pluginsBox = new VisualElement {
+                style = {
+                    marginTop = 16,
+                    borderTopWidth = 1,
+                    borderBottomWidth = 1,
+                    borderLeftWidth = 1,
+                    borderRightWidth = 1,
+                    borderTopColor = new Color(0.35f, 0.35f, 0.35f),
+                    borderBottomColor = new Color(0.35f, 0.35f, 0.35f),
+                    borderLeftColor = new Color(0.35f, 0.35f, 0.35f),
+                    borderRightColor = new Color(0.35f, 0.35f, 0.35f),
+                    backgroundColor = new Color(0f, 0f, 0f, 0.1f),
+                    paddingLeft = 8,
+                    paddingRight = 8,
+                    paddingTop = 4,
+                    paddingBottom = 8,
+                },
+            };
+
+            pluginsBox.Add(new Label("Plugins") {
+                style = {
+                    fontSize = 16,
+                    unityFontStyleAndWeight = FontStyle.Bold,
+                    unityTextAlign = TextAnchor.MiddleCenter,
+                    color = new Color(0.752f, 0.752f, 0.752f),
+                    marginTop = 4,
+                    marginBottom = 8,
+                },
+            });
+
+            foreach ((var provider, var existingSettings) in PluginSettingsManager.Settings) {
+                var settingsInstance = existingSettings;
+                if (settingsInstance == null) {
+                    settingsInstance = PluginSettingsManager.GetOrCreateSettings(provider as IPlugin, provider.SettingsType);
+                    PluginSettingsManager.RegisterSettingsProvider(provider, settingsInstance);
+                }
+
+                var pluginSerializedSettings = new SerializedObject(settingsInstance);
+
+                var pluginSection = new VisualElement();
+                pluginSection.Add(CreatePluginHeader(provider, settingsInstance));
+
+                var pluginContent = new VisualElement { style = { marginLeft = 3, marginRight = 3 } };
+                pluginContent.Add(provider.CreateSettingsUI(pluginSerializedSettings));
+                pluginSection.Add(pluginContent);
+
+                pluginsBox.Add(pluginSection);
+                pluginBindings.Add((pluginSection, pluginSerializedSettings));
+            }
+
+            mainContainer.Add(pluginsBox);
+        }
+
+        rootElement.Add(mainContainer);
+        mainContainer.Bind(serializedSettings);
+
+        // Re-bind each plugin section to its own SO, overriding the propagated main settings bind.
+        foreach ((var element, var so) in pluginBindings) {
+            element.Bind(so);
+        }
+    }
+
+    private static Label CreateSectionLabel(string text, bool firstSection = false) {
+        return new Label(text) {
+            style = {
+                fontSize = 16,
+                unityFontStyleAndWeight = FontStyle.Bold,
+                marginTop = firstSection ? 0 : 16,
+                marginBottom = 4,
+            },
         };
+    }
+
+    private static VisualElement CreatePluginHeader(IPluginSettingsProvider provider, ScriptableObject pluginSettings) {
+        var pluginName = provider is IPlugin plugin ? plugin.Name : provider.GetType().Name;
+        var header = new VisualElement {
+            style = {
+                flexDirection = FlexDirection.Row,
+                alignItems = Align.Center,
+                marginTop = 8,
+                marginBottom = 4,
+            },
+        };
+
+        header.Add(new Label(pluginName) {
+            style = {
+                unityFontStyleAndWeight = FontStyle.Bold,
+                fontSize = 13,
+                width = 256,
+            },
+        });
+
+        var objectField = new ObjectField { value = pluginSettings, objectType = pluginSettings.GetType() };
+        objectField.SetEnabled(false);
+        objectField.style.flexGrow = 1;
+        objectField.style.minWidth = 256;
+        header.Add(objectField);
+
+        return header;
     }
 
     [SettingsProvider]
-    public static SettingsProvider CreateCommandPaletteSettingsProvider() {
+    public static SettingsProvider Create() {
         PluginSettingsManager.CleanupAssets();
         HashSet<string> keywords = new() {
-            "Command Palette",
-            "Blur",
-            "Down Sample",
-            "Size",
-            "Passes",
-            "Tint",
-            "Color",
-            "Amount",
-            "Clear",
-            "Selection",
-            "Search",
+            "Command Palette", "Blur", "Down Sample", "Size", "Passes",
+            "Tint", "Color", "Amount", "Clear", "Selection", "Search",
         };
-
         foreach ((var provider, _) in PluginSettingsManager.Settings) {
             provider.AddKeywords(keywords);
         }
-
-        return new SettingsProvider("Project/CommandPalette", SettingsScope.Project) {
-            label = "Command Palette",
-            guiHandler = _ => {
-                EnsureStyles();
-                var settings = CommandPaletteSettings.GetSerializedSettings();
-                DrawBlurSettings(settings);
-                settings.ApplyModifiedProperties();
-
-                if (PluginSettingsManager.Settings.Count <= 0) {
-                    return;
-                }
-
-                GUILayout.Space(8.0f);
-                GUILayout.BeginVertical("Plugins", s_BoxStyle);
-                GUILayout.Space(24.0f);
-                List<(IPluginSettingsProvider, ScriptableObject)> newSettings = new();
-                foreach ((var provider, var pluginSettings) in PluginSettingsManager.Settings) {
-                    var settingsInstance = pluginSettings;
-                    if (settingsInstance == null) {
-                        settingsInstance = PluginSettingsManager.GetOrCreateSettings(provider as IPlugin, provider.SettingsType);
-                        newSettings.Add((provider, settingsInstance));
-                    }
-
-                    DrawPluginHeader(provider, settingsInstance);
-                    GUILayout.BeginVertical(s_PluginContentsStyle);
-                    provider.DrawSettings(new SerializedObject(settingsInstance));
-                    GUILayout.EndVertical();
-                }
-
-                GUILayout.EndVertical();
-
-                foreach ((var provider, var pluginSettings) in newSettings) {
-                    PluginSettingsManager.RegisterSettingsProvider(provider, pluginSettings);
-                }
-            },
-            keywords = keywords,
-        };
-    }
-
-    private static void DrawBlurSettings(SerializedObject serializedObject) {
-        EnsureStyles();
-        var settings = CommandPaletteSettings.GetOrCreateSettings();
-
-        GUILayout.BeginVertical("", s_SectionStyle);
-        GUILayout.Label("General Settings", s_HeaderStyle);
-        EditorGUILayout.PropertyField(serializedObject.FindProperty(CommandPaletteSettings.ClearSearchOnSelectionProperty));
-
-        GUILayout.Label("Blur Settings", s_HeaderStyle);
-        EditorGUILayout.PropertyField(serializedObject.FindProperty(CommandPaletteSettings.DownSamplePassesProperty));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty(CommandPaletteSettings.PassesProperty));
-        EditorGUILayout.PropertyField(serializedObject.FindProperty(CommandPaletteSettings.BlurSizeProperty));
-
-        EditorGUILayout.PropertyField(serializedObject.FindProperty(CommandPaletteSettings.EnableTintProperty));
-        if (settings.EnableTint) {
-            using var _ = new GUILayout.HorizontalScope();
-            GUILayout.Space(16.0f);
-            using var __ = new GUILayout.VerticalScope();
-            EditorGUILayout.PropertyField(serializedObject.FindProperty(CommandPaletteSettings.TintAmountProperty));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty(CommandPaletteSettings.TintProperty));
-        }
-
-        EditorGUILayout.PropertyField(serializedObject.FindProperty(CommandPaletteSettings.EnableVibrancyProperty));
-        if (settings.EnableVibrancy) {
-            using var _ = new GUILayout.HorizontalScope();
-            GUILayout.Space(16.0f);
-            using var __ = new GUILayout.VerticalScope();
-            EditorGUILayout.PropertyField(serializedObject.FindProperty(CommandPaletteSettings.VibrancyProperty));
-        }
-
-        EditorGUILayout.PropertyField(serializedObject.FindProperty(CommandPaletteSettings.EnableNoiseProperty));
-        if (settings.EnableNoise) {
-            using var _ = new GUILayout.HorizontalScope();
-            GUILayout.Space(16.0f);
-            using var __ = new GUILayout.VerticalScope();
-            EditorGUILayout.PropertyField(serializedObject.FindProperty(CommandPaletteSettings.NoiseTextureProperty));
-        }
-
-        GUILayout.EndVertical();
-    }
-
-    private static void DrawPluginHeader(IPluginSettingsProvider provider, ScriptableObject pluginSettings) {
-        EnsureStyles();
-        var pluginName = provider is IPlugin plugin ? plugin.Name : provider.GetType().Name;
-        GUILayout.BeginHorizontal(s_PluginHeaderStyle);
-        GUILayout.Label(pluginName, s_PluginNameStyle, GUILayout.Width(256.0f));
-        GUI.enabled = false;
-        EditorGUILayout.ObjectField((string?)null, pluginSettings, pluginSettings.GetType(), true, GUILayout.ExpandWidth(true), GUILayout.MinWidth(256.0f));
-        GUI.enabled = true;
-        GUILayout.EndHorizontal();
+        return new CommandPaletteSettingsProvider(keywords);
     }
 }

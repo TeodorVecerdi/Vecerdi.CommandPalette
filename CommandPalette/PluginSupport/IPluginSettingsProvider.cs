@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Vecerdi.CommandPalette.PluginSupport;
 
 public interface IPluginSettingsProvider {
     Type SettingsType { get; }
-    void DrawSettings(SerializedObject settings);
+    VisualElement CreateSettingsUI(SerializedObject settings);
     void AddKeywords(HashSet<string> keywords);
 }
 
