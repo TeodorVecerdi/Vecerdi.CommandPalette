@@ -4,7 +4,6 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using Vecerdi.CommandPalette.Settings;
-using Object = UnityEngine.Object;
 
 namespace Vecerdi.CommandPalette.PluginSupport;
 
