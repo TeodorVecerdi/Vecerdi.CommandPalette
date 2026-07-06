@@ -4,6 +4,7 @@ using System.Linq;
 using FuzzySharp;
 using FuzzySharp.SimilarityRatio;
 using FuzzySharp.SimilarityRatio.Scorer.StrategySensitive;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Vecerdi.CommandPalette.Basic.Data;
@@ -230,7 +231,8 @@ public sealed class InlineParameterValueView : View {
     }
 
     private void ExecuteEntry(InlineParameterResultEntry entry) {
-        m_Entry.Method.Invoke(null, new[] { entry.Value });
+        // Deferred so the command runs after the popup has closed (see CommandsPlugin.ExecuteEntry).
+        EditorApplication.delayCall += () => m_Entry.Method.Invoke(null, new[] { entry.Value });
         Window.Close();
     }
 }

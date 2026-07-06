@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Vecerdi.CommandPalette.Basic.Data;
@@ -71,7 +72,8 @@ public class CommandParameterView : View {
         CreateParameterFields(parameterValues);
 
         m_ParametersContainer.Add(new Button(() => {
-            m_Entry.Method.Invoke(null, parameterValues.Values);
+            // Deferred so the command runs after the popup has closed (see CommandsPlugin.ExecuteEntry).
+            EditorApplication.delayCall += () => m_Entry.Method.Invoke(null, parameterValues.Values);
             Window.Close();
         }).Initialized(button => {
             button.style.marginTop = ParameterSpacing;
@@ -108,7 +110,9 @@ public class CommandParameterView : View {
 
                     if (view.m_ParametersContainer.userData is object[] userData) {
                         var entry = (CommandEntry)userData[0];
-                        entry.Method.Invoke(null, ((CommandParameterValues)userData[1]).Values);
+                        var values = (CommandParameterValues)userData[1];
+                        // Deferred so the command runs after the popup has closed (see CommandsPlugin.ExecuteEntry).
+                        EditorApplication.delayCall += () => entry.Method.Invoke(null, values.Values);
                         view.Window.Close();
                     }
                 }

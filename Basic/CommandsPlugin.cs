@@ -103,7 +103,11 @@ public partial class CommandsPlugin : IPlugin, IResourcePathProvider {
             return false;
         }
 
-        entry.Method.Invoke(null, null);
+        // Defer execution until after the palette window has closed. Running the command
+        // while the focused popup is being destroyed mid-event-dispatch makes other editor
+        // windows process events without a valid current GUIView, which crashes e.g. the
+        // hierarchy's TreeViewController (NRE in IterateVisibleItems via MarkHotRegion).
+        EditorApplication.delayCall += () => entry.Method.Invoke(null, null);
         return true;
     }
 
