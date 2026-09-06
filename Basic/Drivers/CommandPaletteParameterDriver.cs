@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Unity.Scripting.LifecycleManagement;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -11,22 +12,16 @@ namespace Vecerdi.CommandPalette.Basic.Drivers;
 
 public delegate VisualElement CreateParameterFieldDelegate(CommandParameterValues parameterValues, int parameterIndex);
 
+[NoAutoStaticsCleanup]
 public static class CommandPaletteParameterDriver {
     private static readonly Dictionary<Type, CreateParameterFieldDelegate> s_ExternalParameterFieldFunctions = new();
 
     public static void RegisterParameterFieldFunction(Type type, CreateParameterFieldDelegate createParameterFieldFunction) {
-        if (!s_ExternalParameterFieldFunctions.ContainsKey(type)) {
-            s_ExternalParameterFieldFunctions[type] = createParameterFieldFunction;
-        }
+        s_ExternalParameterFieldFunctions.TryAdd(type, createParameterFieldFunction);
     }
 
     public static bool TryRegisterParameterFieldFunction(Type type, CreateParameterFieldDelegate createParameterFieldFunction) {
-        if (s_ExternalParameterFieldFunctions.ContainsKey(type)) {
-            return false;
-        }
-
-        s_ExternalParameterFieldFunctions.Add(type, createParameterFieldFunction);
-        return true;
+        return s_ExternalParameterFieldFunctions.TryAdd(type, createParameterFieldFunction);
     }
 
     public static bool IsKnownType(Type type) {

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Reflection;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 using Vecerdi.CommandPalette.Basic.Attributes;
 
 namespace Vecerdi.CommandPalette.Basic;
 
+[NoAutoStaticsCleanup]
 public static class ExternalPluginsCommands {
     private static readonly MethodInfo? s_ConsolePro3WindowCreateWindow = Type.GetType("FlyingWormConsole3.ConsolePro3Window, ConsolePro.Editor")?.GetMethod("CreateWindow", BindingFlags.Static | BindingFlags.Public);
 

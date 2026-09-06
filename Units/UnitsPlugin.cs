@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using Unity.Scripting.LifecycleManagement;
 using UnityEditor;
 using UnityEngine;
 using Vecerdi.CommandPalette.Core;
@@ -11,18 +12,19 @@ using Vecerdi.CommandPalette.Units.Settings;
 
 namespace Vecerdi.CommandPalette.Units;
 
+[NoAutoStaticsCleanup]
 public partial class UnitsPlugin : IPlugin, IResourcePathProvider {
     [InitializeOnLoadMethod]
     private static void InitializePlugin() {
+        s_Plugin = new UnitsPlugin();
         CommandPalette.RegisterPlugin(s_Plugin);
-        Settings = CommandPalette.GetSettings(s_Plugin);
+        s_Settings = CommandPalette.GetSettings(s_Plugin);
     }
 
     public static IResourcePathProvider ResourcePathProvider => s_Plugin;
 
-    private static readonly UnitsPlugin s_Plugin = new();
-
-    internal static UnitConversionSettings Settings { get; private set; } = null!;
+    private static UnitsPlugin s_Plugin = null!;
+    private static UnitConversionSettings s_Settings = null!;
 
     public string Name => "Unit Converter";
     public float PriorityMultiplier => 2.0f;
@@ -36,7 +38,7 @@ public partial class UnitsPlugin : IPlugin, IResourcePathProvider {
         if (!IsValid(query))
             return [];
 
-        var conversion = UnitConversionHelper.ParseUnit(query.Text, Settings.RemToPxRatio);
+        var conversion = UnitConversionHelper.ParseUnit(query.Text, s_Settings.RemToPxRatio);
         if (conversion == null)
             return [];
 

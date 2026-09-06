@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Unity.Scripting.LifecycleManagement;
 using Vecerdi.CommandPalette.Core;
 
 namespace Vecerdi.CommandPalette.PluginSupport;
 
+[NoAutoStaticsCleanup]
 internal static class PluginManager {
     private static readonly List<IPlugin> s_Plugins = new();
 

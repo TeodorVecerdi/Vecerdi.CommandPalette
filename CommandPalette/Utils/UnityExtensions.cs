@@ -1,13 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Unity.Scripting.LifecycleManagement;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Vecerdi.CommandPalette.Utils;
 
+[NoAutoStaticsCleanup]
 public static class UnityExtensions {
     private static Type? s_ContainerWinType;
     private static FieldInfo s_ShowModeField = null!;

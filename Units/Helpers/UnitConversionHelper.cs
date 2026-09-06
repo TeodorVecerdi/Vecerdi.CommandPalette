@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 
 namespace Vecerdi.CommandPalette.Units.Helpers;
 
+[NoAutoStaticsCleanup]
 public static class UnitConversionHelper {
     // Tailwind font sizes to rem values
     private static readonly Dictionary<string, float> s_TailwindFontSizes = new() {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Vecerdi.CommandPalette.Core;
@@ -9,6 +10,7 @@ using Vecerdi.CommandPalette.Utils;
 
 namespace Vecerdi.CommandPalette.Views;
 
+[NoAutoStaticsCleanup]
 public sealed class MainView : View {
     private const float ResultsSpacing = 6.0f;
     private const int MaxDisplayedItemCount = 6;

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Unity.Scripting.LifecycleManagement;
 using UnityEditor;
 using UnityEngine;
 using Vecerdi.CommandPalette.Basic.Data;
@@ -15,6 +16,7 @@ using Vecerdi.CommandPalette.Views;
 
 namespace Vecerdi.CommandPalette.Basic;
 
+[NoAutoStaticsCleanup]
 public partial class CommandsPlugin : IPlugin, IResourcePathProvider {
     [InitializeOnLoadMethod]
     private static void InitializePlugin() {

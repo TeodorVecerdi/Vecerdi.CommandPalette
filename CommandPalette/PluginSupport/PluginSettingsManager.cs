@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Scripting.LifecycleManagement;
 using UnityEditor;
 using UnityEngine;
 using Vecerdi.CommandPalette.Settings;
 
 namespace Vecerdi.CommandPalette.PluginSupport;
 
+[NoAutoStaticsCleanup]
 internal static class PluginSettingsManager {
     internal static Dictionary<IPluginSettingsProvider, ScriptableObject> Settings { get; } = new();
 

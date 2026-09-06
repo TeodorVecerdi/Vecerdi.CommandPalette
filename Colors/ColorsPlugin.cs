@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using Unity.Scripting.LifecycleManagement;
 using UnityEditor;
 using UnityEngine;
 using Vecerdi.CommandPalette.Core;
@@ -10,6 +11,7 @@ using Vecerdi.CommandPalette.Resource;
 
 namespace Vecerdi.CommandPalette.Colors;
 
+[NoAutoStaticsCleanup]
 public class ColorsPlugin : IPlugin, IResourcePathProvider {
     [InitializeOnLoadMethod]
     private static void InitializePlugin() {

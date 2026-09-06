@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Unity.Scripting.LifecycleManagement;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEditor.SceneManagement;
@@ -13,6 +14,7 @@ using Vecerdi.CommandPalette.Core;
 
 namespace Vecerdi.CommandPalette.Basic;
 
+[NoAutoStaticsCleanup]
 public static class BasicCommands {
     private static readonly MethodInfo? s_ClearConsoleMethod = Type.GetType("UnityEditor.LogEntries, UnityEditor")?.GetMethod("Clear", BindingFlags.Static | BindingFlags.Public);
     private static readonly MethodInfo? s_GetActiveFolderPath = Type.GetType("UnityEditor.ProjectWindowUtil, UnityEditor")?.GetMethod("GetActiveFolderPath", BindingFlags.Static | BindingFlags.NonPublic);

@@ -1,4 +1,5 @@
 ﻿using System;
+using Unity.Scripting.LifecycleManagement;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -12,6 +13,7 @@ using Object = UnityEngine.Object;
 
 namespace Vecerdi.CommandPalette;
 
+[NoAutoStaticsCleanup]
 public class CommandPaletteWindow : EditorWindow {
     private const float BaseWidth = 680.0f;
     private const float YOffset = 200.0f;

@@ -1,10 +1,12 @@
 ﻿using System;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine.UIElements;
 using Vecerdi.CommandPalette.Core;
 using Vecerdi.CommandPalette.Resource;
 
 namespace Vecerdi.CommandPalette.Math;
 
+[NoAutoStaticsCleanup]
 public class MathResultEntry(ResultDisplaySettings displaySettings, int score, Func<ResultEntry, bool> onSelect) : ResultEntry(displaySettings, score, onSelect, MathPlugin.ResourcePathProvider) {
     private static StyleSheet? s_Stylesheet;
 

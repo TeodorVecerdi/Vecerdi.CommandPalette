@@ -1,9 +1,11 @@
 ﻿using System;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 
 namespace Vecerdi.CommandPalette.Utils;
 
+[NoAutoStaticsCleanup]
 public static class Blur {
     private static readonly int s_BlurSizeShaderPropertyId = Shader.PropertyToID("_BlurSize");
     private static readonly int s_EnableTintShaderPropertyId = Shader.PropertyToID("_EnableTint");

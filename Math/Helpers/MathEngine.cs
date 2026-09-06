@@ -4,10 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Mages.Core;
+using Vecerdi.CommandPalette.Math.Settings;
 
 namespace Vecerdi.CommandPalette.Math.Helpers;
 
-public class MathEngine {
+public class MathEngine(MathPluginSettings settings) {
     private readonly Engine m_MagesEngine = new(new Configuration {
         Scope = new Dictionary<string, object> {
             { "e", System.Math.E }, // e is not contained in the default mages engine
@@ -39,10 +40,10 @@ public class MathEngine {
         }
 
         var decimalResult = Convert.ToDecimal(result, cultureInfo);
-        var roundedResult = Round(decimalResult, MathPlugin.Settings.DisplayDecimalPlaces);
+        var roundedResult = Round(decimalResult, settings.DisplayDecimalPlaces);
 
         return new CalculateResult {
-            Result = Round(decimalResult, MathPlugin.Settings.CopyDecimalPlaces),
+            Result = Round(decimalResult, settings.CopyDecimalPlaces),
             RoundedResult = roundedResult,
         };
     }

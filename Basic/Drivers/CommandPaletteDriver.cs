@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Unity.Scripting.LifecycleManagement;
 using UnityEditor;
 using UnityEngine;
 using Vecerdi.CommandPalette.Basic.Attributes;
@@ -10,16 +11,14 @@ using Vecerdi.CommandPalette.Basic.Data;
 
 namespace Vecerdi.CommandPalette.Basic.Drivers;
 
+[NoAutoStaticsCleanup]
 public static class CommandPaletteDriver {
-    private static readonly List<CommandEntry> s_CommandEntries = new();
-    private static Dictionary<string, MethodInfo> s_ParameterValueProviders = null!;
-
-    public static List<CommandEntry> CommandEntries => s_CommandEntries;
-    public static Dictionary<string, MethodInfo> ParameterValueProviders => s_ParameterValueProviders;
+    public static List<CommandEntry> CommandEntries { get; } = [];
+    public static Dictionary<string, MethodInfo> ParameterValueProviders { get; private set; } = null!;
 
     [InitializeOnLoadMethod]
     private static void InitializeDriver() {
-        s_ParameterValueProviders = TypeCache.GetMethodsWithAttribute<InlineParameterValuesProviderAttribute>().ToDictionary(info => info.Name);
+        ParameterValueProviders = TypeCache.GetMethodsWithAttribute<InlineParameterValuesProviderAttribute>().ToDictionary(info => info.Name);
         var validateMethods = TypeCache.GetMethodsWithAttribute<CommandValidateMethodAttribute>().ToDictionary(info => info.Name);
         IEnumerable<MethodInfo> methods = TypeCache.GetMethodsWithAttribute<CommandAttribute>();
 
@@ -39,12 +38,12 @@ public static class CommandPaletteDriver {
                 }
             }
 
-            s_CommandEntries.Add(new CommandEntry(displayName, shortName, attribute.Description, attribute.ShowOnlyWhenSearching, method, validationMethod, attribute.Icon, attribute.Priority));
+            CommandEntries.Add(new CommandEntry(displayName, shortName, attribute.Description, attribute.ShowOnlyWhenSearching, method, validationMethod, attribute.Icon, attribute.Priority));
         }
     }
 
     private static string GetShortName(string name) {
-        var parts = name.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         StringBuilder builder = new();
         foreach (var part in parts) {
             builder.Append(part[0]);

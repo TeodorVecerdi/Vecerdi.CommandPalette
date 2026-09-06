@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
+using Unity.Scripting.LifecycleManagement;
 using UnityEditor;
 using UnityEngine;
 using Vecerdi.CommandPalette.Core;
@@ -13,19 +14,21 @@ using Vecerdi.CommandPalette.Resource;
 
 namespace Vecerdi.CommandPalette.Math;
 
+[NoAutoStaticsCleanup]
 public partial class MathPlugin : IPlugin, IResourcePathProvider {
     [InitializeOnLoadMethod]
     private static void InitializePlugin() {
+        s_Plugin = new MathPlugin();
         CommandPalette.RegisterPlugin(s_Plugin);
-        Settings = CommandPalette.GetSettings(s_Plugin);
+        s_Settings = CommandPalette.GetSettings(s_Plugin);
+        s_Engine = new MathEngine(s_Settings);
     }
 
     public static IResourcePathProvider ResourcePathProvider => s_Plugin;
 
-    private static readonly MathPlugin s_Plugin = new();
-    private static readonly MathEngine s_Engine = new();
-
-    internal static MathPluginSettings Settings { get; private set; } = null!;
+    private static MathPlugin s_Plugin = null!;
+    private static MathEngine s_Engine = null!;
+    private static MathPluginSettings s_Settings = null!;
 
     public string Name => "Math Engine";
     public float PriorityMultiplier => 2.0f;
@@ -62,7 +65,7 @@ public partial class MathPlugin : IPlugin, IResourcePathProvider {
         return new List<ResultEntry>();
     }
 
-    private MathResultEntry CreateResult(CalculateResult calculateResult, int priority) {
+    private static MathResultEntry CreateResult(CalculateResult calculateResult, int priority) {
         return new MathResultEntry(new ResultDisplaySettings(calculateResult.RoundedResult.ToString(CultureInfo.CurrentCulture), "", "Copy to clipboard", IconResource.FromResource("Textures/CalculatorIcon.png")), priority, CopyToClipboard) { UserData = calculateResult };
     }
 
