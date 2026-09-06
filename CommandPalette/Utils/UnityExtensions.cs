@@ -2,32 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Vecerdi.CommandPalette.Utils;
 
 public static class UnityExtensions {
-    public static Type[] GetAllDerivedTypes(this AppDomain aAppDomain, Type aType) {
-        List<Type> result = [];
-        var assemblies = aAppDomain.GetAssemblies();
-        foreach (var assembly in assemblies) {
-            var types = assembly.GetTypes();
-            foreach (var type in types)
-                if (type.IsSubclassOf(aType))
-                    result.Add(type);
-        }
-
-        return result.ToArray();
-    }
-
     private static Type? s_ContainerWinType;
     private static FieldInfo s_ShowModeField = null!;
     private static PropertyInfo s_PositionProperty = null!;
 
     public static Object GetEditorMainWindow() {
         if (s_ContainerWinType == null) {
-            s_ContainerWinType = AppDomain.CurrentDomain.GetAllDerivedTypes(typeof(ScriptableObject)).FirstOrDefault(t => t.Name == "ContainerWindow");
+            s_ContainerWinType = TypeCache.GetTypesDerivedFrom<ScriptableObject>().FirstOrDefault(t => t.Name == "ContainerWindow");
             if (s_ContainerWinType == null)
                 throw new MissingMemberException("Can't find internal type ContainerWindow. Maybe something has changed inside Unity");
             s_ShowModeField = s_ContainerWinType.GetField("m_ShowMode", BindingFlags.NonPublic | BindingFlags.Instance)!;
